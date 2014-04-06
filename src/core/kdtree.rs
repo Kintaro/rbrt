@@ -33,8 +33,8 @@ pub trait KdNodeData {
     fn get_point(&self) -> Point;
 }
 
-impl<T: KdNodeData + Clone> KdTree<T> {
-    pub fn new(d: &Vec<T>) -> KdTree<T> {
+impl<T: KdNodeData + Clone + TotalOrd> KdTree<T> {
+    pub fn new(d: &mut Vec<T>) -> KdTree<T> {
         let mut tree = KdTree {
             nodes: Vec::new(),
             node_data: Vec::new(),
@@ -47,7 +47,7 @@ impl<T: KdNodeData + Clone> KdTree<T> {
         return tree;
     }
 
-    fn recursive_build(&mut self, node_num: uint, start: uint, end: uint, build_nodes: &Vec<T>) {
+    fn recursive_build(&mut self, node_num: uint, start: uint, end: uint, build_nodes: &mut Vec<T>) {
         if start + 1 == end {
             self.nodes.get_mut(node_num).init_leaf();
             self.node_data.grow_set(node_num, build_nodes.get(start), 
@@ -63,12 +63,28 @@ impl<T: KdNodeData + Clone> KdTree<T> {
         let split_axis = bound.maximum_extent();
         let split_pos  = (start + end) / 2;
 
-        // TODO: n-th element
+        let sorter = |a: &T, b: &T| -> Ordering {
+            if a.get_point()[split_axis] == a.get_point()[split_axis] {
+                a.cmp(b)
+            } else {
+                let ap = a.get_point()[split_axis];
+                let bp = a.get_point()[split_axis];
+
+                if ap == bp {
+                    Equal
+                } else if ap < bp {
+                    Less
+                } else {
+                    Greater
+                }
+            }
+        };
 
         self.nodes.get_mut(node_num).init(
             build_nodes.get(split_pos).get_point()[split_axis], split_axis);
         self.node_data.grow_set(node_num, build_nodes.get(split_pos), 
             build_nodes.get(split_pos).clone());
+        build_nodes.sort_by(sorter);
 
         if start < split_pos {
             self.nodes.get_mut(node_num).has_left_child = true;
