@@ -13,19 +13,20 @@ pub struct ShapeBase {
     transform_swaps_handedness: bool
 }
 
-pub trait Shape {
-    fn get_base(&self) -> ShapeBase;
-    fn object_bound(&self) -> BBox;
-    fn area(&self) -> f32;
-    fn intersect_p(&self, ray: &Ray) -> bool;
+pub trait Shape<'a> {
+    fn get_base(&'a self) -> ShapeBase;
+    fn get_base_mut(&'a mut self) -> &'a mut ShapeBase;
+    fn object_bound(&'a self) -> BBox;
+    fn area(&'a self) -> f32;
+    fn intersect_p(&'a self, ray: &Ray) -> bool;
 
-    fn world_bound(&self) -> BBox {
+    fn world_bound(&'a self) -> BBox {
         self.get_base().object_to_world.apply(self.object_bound())
     }
 
-    fn pdf(&self) -> f32 {
+    fn pdf(&'a self) -> f32 {
         1.0 / self.area()
     }
 
-    fn can_intersect(&self) -> bool { true }
+    fn can_intersect(&'a self) -> bool { true }
 }

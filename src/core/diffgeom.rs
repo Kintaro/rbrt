@@ -3,12 +3,12 @@ use std::rc::Rc;
 use geometry::{ Normal, Point, RayDifferential, Vector, dot };
 use shape::Shape;
 
-pub struct DifferentialGeometry {
+pub struct DifferentialGeometry<'a> {
     p:     Point, 
     nn:    Normal,
     u:     f32,
     v:     f32,
-    shape: Rc<~Shape>,
+    shape: Rc<~Shape<'a>>,
     dpdu:  Vector,
     dpdv:  Vector,
     dndu:  Normal,
@@ -21,7 +21,7 @@ pub struct DifferentialGeometry {
     dvdy:  f32
 }
 
-impl DifferentialGeometry {
+impl<'a> DifferentialGeometry<'a> {
     pub fn compute_differentials(&mut self, ray: &RayDifferential) {
         if !ray.has_differentials {
             self.reset();

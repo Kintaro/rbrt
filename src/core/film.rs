@@ -8,6 +8,7 @@ pub struct FilmBase {
 
 pub trait Film {
     fn add_sample(sample: &CameraSampleBase, L: &Spectrum);
+    fn splat(sample: &CameraSampleBase, L: &Spectrum);
     fn get_sample_extent() -> (uint, uint, uint, uint);
     fn get_pixel_extent() -> (uint, uint, uint, uint);
     fn update_display(x0: uint, y0: uint, x1: uint, y1: uint, splat_scale: Option<f32>);

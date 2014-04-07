@@ -36,10 +36,10 @@ pub trait KdNodeData {
 impl<T: KdNodeData + Clone + TotalOrd> KdTree<T> {
     pub fn new(d: &mut Vec<T>) -> KdTree<T> {
         let mut tree = KdTree {
-            nodes: Vec::new(),
-            node_data: Vec::new(),
+            nodes:          Vec::new(),
+            node_data:      Vec::new(),
             next_free_node: 1,
-            number_nodes: d.len()
+            number_nodes:   d.len()
         };
 
         tree.recursive_build(0, 0, tree.number_nodes, d);
@@ -64,19 +64,13 @@ impl<T: KdNodeData + Clone + TotalOrd> KdTree<T> {
         let split_pos  = (start + end) / 2;
 
         let sorter = |a: &T, b: &T| -> Ordering {
-            if a.get_point()[split_axis] == a.get_point()[split_axis] {
-                a.cmp(b)
-            } else {
-                let ap = a.get_point()[split_axis];
-                let bp = a.get_point()[split_axis];
+            let ap = a.get_point()[split_axis];
+            let bp = a.get_point()[split_axis];
 
-                if ap == bp {
-                    Equal
-                } else if ap < bp {
-                    Less
-                } else {
-                    Greater
-                }
+            match (ap == bp, ap < bp) {
+                (true, false) => a.cmp(b),
+                (false, true) => Less,
+                _             => Greater
             }
         };
 
@@ -111,26 +105,32 @@ impl<T: KdNodeData + Clone + TotalOrd> KdTree<T> {
         let node = self.nodes.get(node_num);
         let axis = node.split_axis;
 
-        if axis != 3 {
-            let dist2 = (p[axis] - node.split_pos) * (p[axis] - node.split_pos);
-            if p[axis] <= node.split_pos {
-                if node.has_left_child {
-                    self.lookup_private(node_num + 1, p, max_dist_squared, 
-                        |a, b, c, d| process(a, b, c, d));
-                }
-                if dist2 < *max_dist_squared && node.right_child < self.number_nodes {
-                    self.lookup_private(node.right_child, p, max_dist_squared, 
-                        |a, b, c, d| process(a, b, c, d));
-                }
-            } else {
-                if node.right_child < self.number_nodes {
-                    self.lookup_private(node.right_child, p, max_dist_squared, 
-                        |a, b, c, d| process(a, b, c, d));
-                }
-                if dist2 < *max_dist_squared && node.has_left_child {
-                    self.lookup_private(node_num + 1, p, max_dist_squared, 
-                        |a, b, c, d| process(a, b, c, d));
-                }
+        if axis == 3 {
+            let dist2 = distance_squared(&self.node_data.get(node_num).get_point(), p);
+            if dist2 < *max_dist_squared {
+                process(p, self.node_data.get(node_num), dist2, *max_dist_squared);
+            }
+            return;
+        }
+
+        let dist2 = (p[axis] - node.split_pos) * (p[axis] - node.split_pos);
+        if p[axis] <= node.split_pos {
+            if node.has_left_child {
+                self.lookup_private(node_num + 1, p, max_dist_squared, 
+                    |a, b, c, d| process(a, b, c, d));
+            }
+            if dist2 < *max_dist_squared && node.right_child < self.number_nodes {
+                self.lookup_private(node.right_child, p, max_dist_squared, 
+                    |a, b, c, d| process(a, b, c, d));
+            }
+        } else {
+            if node.right_child < self.number_nodes {
+                self.lookup_private(node.right_child, p, max_dist_squared, 
+                    |a, b, c, d| process(a, b, c, d));
+            }
+            if dist2 < *max_dist_squared && node.has_left_child {
+                self.lookup_private(node_num + 1, p, max_dist_squared, 
+                    |a, b, c, d| process(a, b, c, d));
             }
         }
 

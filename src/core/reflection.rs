@@ -47,30 +47,32 @@ pub struct BxDFBase {
     pub bxdf_type: BxDFType
 }
 
-pub trait BxDF {
-    fn get_base(&self) -> BxDFBase;
-    fn f(&self, wo: &Vector, wi: &Vector) -> Spectrum;
-    fn sample_f(&self, wo: &Vector, wi: &mut Vector, u1: f32, u2: f32) -> (Spectrum, f32);
-    fn rho(&self, wo: Vector, num_samples: uint, samples: &[f32]) -> Spectrum;
-    fn rho2(&self, num_samples: uint, samples1: &[f32], samples2: &[f32]) -> Spectrum;
-    fn pdf(&self, wi: &Vector, wo: &Vector) -> f32;
+pub trait BxDF<'a> {
+    fn get_base(&'a self) -> &'a BxDFBase;
+    fn get_base_mut(&'a mut self) -> &'a mut BxDFBase;
 
-    fn matches_flags(&self, flags: BxDFType) -> bool {
+    fn f(&'a self, wo: &Vector, wi: &Vector) -> Spectrum;
+    fn sample_f(&'a self, wo: &Vector, wi: &mut Vector, u1: f32, u2: f32) -> (Spectrum, f32);
+    fn rho(&'a self, wo: Vector, num_samples: uint, samples: &[f32]) -> Spectrum;
+    fn rho2(&'a self, num_samples: uint, samples1: &[f32], samples2: &[f32]) -> Spectrum;
+    fn pdf(&'a self, wi: &Vector, wo: &Vector) -> f32;
+
+    fn matches_flags(&'a self, flags: BxDFType) -> bool {
         self.get_base().bxdf_type as uint & flags as uint == self.get_base().bxdf_type as uint
     }
 }
 
-pub struct Bsdf {
+pub struct Bsdf<'a> {
     pub nn: Normal,
     pub ng: Normal,
     pub sn: Vector,
     pub tn: Vector,
     pub nbxdfs: uint,
-    pub bxdfs: [Option<~BxDF>, ..8]
+    pub bxdfs: [Option<~BxDF<'a>>, ..8]
 }
 
-impl Bsdf {
-    pub fn add(&mut self, bxdf: ~BxDF) {
+impl<'a> Bsdf<'a> {
+    pub fn add(&'a mut self, bxdf: ~BxDF<'a>) {
         self.bxdfs[self.nbxdfs] = Some(bxdf);
         self.nbxdfs += 1;
     }

@@ -8,6 +8,7 @@ pub mod geometry;
 pub mod integrator;
 pub mod intersection;
 pub mod kdtree;
+pub mod light;
 pub mod material;
 pub mod montecarlo;
 pub mod octree;
