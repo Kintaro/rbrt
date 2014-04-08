@@ -468,8 +468,8 @@ pub fn cross<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T, b
 }
 
 pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vector {
-    Vector::new(sin_theta * f32::cos(phi),
-        sin_theta * f32::sin(phi),
+    Vector::new(sin_theta * phi.cos(),
+        sin_theta * phi.sin(),
         cos_theta)
 }
 
@@ -478,7 +478,7 @@ pub fn spherical_theta(v: &Vector) -> f32 {
 }
 
 pub fn spherical_phi(v: &Vector) -> f32 {
-    let p = f32::atan2(v.y, v.x);
+    let p = v.y.atan2(&v.x);
     if p < 0.0 {
         p + 2.0 * 3.142
     } else {

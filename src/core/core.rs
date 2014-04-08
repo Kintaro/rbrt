@@ -13,6 +13,7 @@ pub mod material;
 pub mod montecarlo;
 pub mod octree;
 pub mod primitive;
+pub mod progress;
 pub mod reflection;
 pub mod renderer;
 pub mod sampler;

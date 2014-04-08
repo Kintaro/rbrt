@@ -9,17 +9,17 @@ pub struct LightBase {
     world_to_light: Transform
 }
 
-pub trait Light {
-    fn get_base(&self) -> LightBase;
-    fn get_base_mut(&self) -> LightBase;
+pub trait Light<'a> {
+    fn get_base(&'a self) -> LightBase;
+    fn get_base_mut(&'a mut self) -> LightBase;
 
-    fn is_delta_light(&self) -> bool;
+    fn is_delta_light(&'a self) -> bool;
 
-    fn power(&self, scene: &Scene) -> Spectrum;
-    fn Le(&self, ray: &RayDifferential) -> Spectrum;
-    fn pdf(&self, p: &Point, wi: &Vector) -> f32;
+    fn power(&'a self, scene: &Scene) -> Spectrum;
+    fn Le(&'a self, ray: &RayDifferential) -> Spectrum;
+    fn pdf(&'a self, p: &Point, wi: &Vector) -> f32;
 
-    fn sh_project(&self, p: &Point, p_epsilon: f32, lmax: uint, scene: &Scene,
+    fn sh_project(&'a self, p: &Point, p_epsilon: f32, lmax: uint, scene: &Scene,
             compute_light_visibility: bool, time: f32, coeffs: &mut Vec<Spectrum>) {
         let ns = round_up_pow_2(self.get_base().num_samples);
 

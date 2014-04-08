@@ -165,8 +165,8 @@ pub fn uniform_sample_hemisphere(u1: f32, u2: f32) -> Vector {
     let z = u1;
     let r = 0.0f32.max(1.0 - z * z).sqrt();
     let phi = 2.0 * f32::consts::PI * u2;
-    let x = r * f32::cos(phi);
-    let y = r * f32::sin(phi);
+    let x = r * phi.cos();
+    let y = r * phi.sin();
 
     Vector::new(x, y, z)
 }
@@ -175,8 +175,8 @@ pub fn uniform_sample_sphere(u1: f32, u2: f32) -> Vector {
     let z = 1.0 - 2.0 * u1;
     let r = 0.0f32.max(1.0 - z * z);
     let phi = 2.0 * f32::consts::PI * u2;
-    let x = r * f32::cos(phi);
-    let y = r * f32::sin(phi);
+    let x = r * phi.cos();
+    let y = r * phi.sin();
 
     Vector::new(x, y, z)
 }
@@ -188,8 +188,8 @@ pub fn uniform_sphere_pdf() -> f32 {
 pub fn uniform_sample_disk(u1: f32, u2: f32) -> (f32, f32) {
     let r = u1.sqrt();
     let t = 2.0 * f32::consts::PI * u2;
-    let x = r * f32::cos(t);
-    let y = r * f32::sin(t);
+    let x = r * t.cos();
+    let y = r * t.sin();
 
     (x, y)
 }
@@ -202,10 +202,10 @@ pub fn uniform_sample_triangle(u1: f32, u2: f32) -> (f32, f32) {
 
 pub fn uniform_sample_cone(u1: f32, u2: f32, costhetamax: f32) -> Vector {
     let costheta = (1.0 - u1) + u1 * costhetamax;
-    let sintheta = f32::sqrt(1.0 - costheta * costheta);
+    let sintheta = (1.0 - costheta * costheta).sqrt();
     let phi      = u2 * 2.0 * f32::consts::PI;
 
-    Vector::new(f32::cos(phi) * sintheta, f32::sin(phi) * sintheta, costheta)
+    Vector::new(phi.cos() * sintheta, phi.sin() * sintheta, costheta)
 }
 
 pub fn concentric_sample_disk(u1: f32, u2: f32) -> (f32, f32) {
@@ -239,7 +239,7 @@ pub fn concentric_sample_disk(u1: f32, u2: f32) -> (f32, f32) {
 
     t *= f32::consts::PI / 4.0;
 
-    (r * f32::cos(t), r * f32::sin(t))
+    (r * t.cos(), r * t.sin())
 }
 
 pub fn van_der_corput(n: uint, scramble: uint) -> f32 {
