@@ -447,18 +447,23 @@ pub fn distance(a: &Point, b: &Point) -> f32 {
     (a - *b).length()
 }
 
+/// Compute the squared distance between two points
 pub fn distance_squared(a: &Point, b: &Point) -> f32 {
     (a - *b).length_squared()
 }
 
+/// Compute the dot product between two vectors or normals
 pub fn dot<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T, b: S) -> f32 {
     a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
 
+/// Compute the absolute dot product between
+/// two vectors or normals
 pub fn abs_dot<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T, b: S) -> f32 {
     (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]).abs()
 }
 
+/// Compute the cross product between two vector or normals
 pub fn cross<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T, b: S) -> Vector {
     let (v1x, v1y, v1z) = (a[0], a[1], a[2]);
     let (v2x, v2y, v2z) = (b[0], b[1], b[2]);
@@ -478,7 +483,7 @@ pub fn spherical_theta(v: &Vector) -> f32 {
 }
 
 pub fn spherical_phi(v: &Vector) -> f32 {
-    let p = v.y.atan2(&v.x);
+    let p = v.y.atan2(v.x);
     if p < 0.0 {
         p + 2.0 * 3.142
     } else {

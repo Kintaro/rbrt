@@ -8,7 +8,7 @@ use transform::Transform;
 
 pub struct Intersection<'a> {
     dg:              DifferentialGeometry<'a>,
-    primitive:       Option<Rc<~Primitive>>,
+    primitive:       Option<Rc<Box<Primitive>>>,
     world_to_object: Transform,
     object_to_world: Transform,
     shape_id:        uint,

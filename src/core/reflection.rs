@@ -68,11 +68,11 @@ pub struct Bsdf<'a> {
     pub sn: Vector,
     pub tn: Vector,
     pub nbxdfs: uint,
-    pub bxdfs: [Option<~BxDF<'a>>, ..8]
+    pub bxdfs: [Option<Box<BxDF<'a>>>, ..8]
 }
 
 impl<'a> Bsdf<'a> {
-    pub fn add(&'a mut self, bxdf: ~BxDF<'a>) {
+    pub fn add(&'a mut self, bxdf: Box<BxDF<'a>>) {
         self.bxdfs[self.nbxdfs] = Some(bxdf);
         self.nbxdfs += 1;
     }

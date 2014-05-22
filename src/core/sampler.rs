@@ -15,8 +15,8 @@ pub struct CameraSampleBase {
 
 pub struct Sample {
     camera_sample:  CameraSampleBase,
-    pub n1D:       ~[uint],
-    pub n2D:       ~[uint],
+    pub n1D:       Vec<uint>,
+    pub n2D:       Vec<uint>,
     pub oneD:      ~[~[f32]],
     pub twoD:      ~[~[f32]]
 }

@@ -132,7 +132,8 @@ pub struct PermutedHalton {
 
 impl PermutedHalton {
     pub fn new(d: uint) -> PermutedHalton {
-        let mut b = slice::from_elem(d, 0u);
+        let mut x = Vec::from_elem(d, 0u);
+        let mut b = x.as_mut_slice();
         let mut sum_bases = 0;
 
         for i in range(0, d) {
@@ -140,7 +141,8 @@ impl PermutedHalton {
             sum_bases += b[i];
         }
 
-        let mut permute = slice::from_elem(sum_bases, 0u);
+        let mut y = Vec::from_elem(sum_bases, 0u);
+        let mut permute = y.as_mut_slice();
         let mut idx = 0;
 
         for i in range(0, d) {
@@ -148,7 +150,7 @@ impl PermutedHalton {
             idx += b[i];
         }
 
-        PermutedHalton { dims: d, b: b, permute: permute }
+        PermutedHalton { dims: d, b: b.to_owned(), permute: permute.to_owned() }
     }
 }
 

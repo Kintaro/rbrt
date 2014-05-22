@@ -2,8 +2,8 @@ use geometry::{ BBox, Ray };
 use primitive::Primitive;
 
 pub struct Scene {
-    aggregate: ~Primitive,
-    bound:      BBox
+    aggregate: Box<Primitive>,
+    bound:     BBox
 }
 
 impl Scene {

@@ -18,10 +18,10 @@ impl ProgressReporter {
         let mut buf = format!("\r{}: [", title);
 
         for i in range(0, total_plusses) {
-            buf.push_char(' ');
+            buf = buf.append(" ");
         }
 
-        buf.push_str("] ");
+        buf = buf.append("] ");
 
         print!("{}", buf);
 
@@ -41,16 +41,16 @@ impl ProgressReporter {
         let mut i = 0;
 
         while i < plusses_needed {
-            buf.push_char('+');
+            buf = buf.append("+");
             i += 1;
         }
 
         while i < self.total_plusses {
-            buf.push_char(' ');
+            buf = buf.append(" ");
             i += 1;
         }
 
-        buf.push_str("] ");
+        buf = buf.append("] ");
 
         print!("{}", buf);
         io::stdio::flush();
@@ -60,10 +60,10 @@ impl ProgressReporter {
         let mut buf = format!("\r{}: [", self.title);
 
         for _ in range(0, self.total_plusses) {
-            buf.push_char('+');
+            buf = buf.append("+");
         }
 
-        buf.push_str("] ");
+        buf = buf.append("] ");
 
         println!("{}", buf);
         io::stdio::flush();

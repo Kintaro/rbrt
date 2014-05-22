@@ -8,7 +8,7 @@ pub struct DifferentialGeometry<'a> {
     nn:    Normal,
     u:     f32,
     v:     f32,
-    shape: Rc<~Shape<'a>>,
+    shape: Rc<Box<Shape<'a>>>,
     dpdu:  Vector,
     dpdv:  Vector,
     dndu:  Normal,

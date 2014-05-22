@@ -1,9 +1,6 @@
 use transform::{ Applicable, Transform };
 use geometry::{ Ray, BBox };
 
-pub mod transform;
-pub mod geometry;
-
 pub struct ShapeBase {
     object_to_world: Transform,
     world_to_oject: Transform,

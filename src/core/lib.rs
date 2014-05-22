@@ -1,3 +1,8 @@
+#![crate_id="rbrt-core#0.0.2"]
+#![comment = "RBRT Core Library"]
+#![license = "BSD"]
+#![crate_type = "lib"]
+
 extern crate rand;
 
 pub mod camera;
@@ -12,6 +17,7 @@ pub mod light;
 pub mod material;
 pub mod montecarlo;
 pub mod octree;
+pub mod paramset;
 pub mod primitive;
 pub mod progress;
 pub mod reflection;

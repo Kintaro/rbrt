@@ -4,7 +4,7 @@ use geometry::{ Ray, RayDifferential };
 pub struct CameraBase {
     shutter_open:  f32,
     shutter_close: f32,
-    film:         ~Film
+    film:          Box<Film>
 }
 
 pub trait Camera<'a> {

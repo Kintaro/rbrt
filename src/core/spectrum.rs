@@ -26,4 +26,4 @@ pub trait RgbSpectrum {
 
 }
 
-pub type Spectrum = ~RgbSpectrum;
+pub type Spectrum = Box<RgbSpectrum>;
