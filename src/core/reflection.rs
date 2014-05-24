@@ -33,16 +33,19 @@ pub struct BsdfSampleOffsets {
     pub dir_offset: uint,
 }
 
-pub enum BxDFType {
-    Reflection    = 1 << 0,
-    Transmission  = 1 << 1,
-    Diffuse       = 1 << 2,
-    Glossy        = 1 << 3,
-    Specular      = 1 << 4,
-    AllTypes      = 0x1c,
-    AllReflection = 0x1d,
-    All           = 0x1f,
-}
+bitflags!(
+  flags BxDFType: u32 {
+    static Reflection      = 0x00000001,
+    static Transmission    = 0x00000010,
+    static Diffuse         = 0x00000100,
+    static Glossy          = 0x00001000,
+    static Specular        = 0x00010000,
+    static AllTypes        = Diffuse.bits | Glossy.bits | Specular.bits,
+    static AllReflection   = Reflection.bits | AllTypes.bits,
+    static AllTransmission = Transmission.bits | AllTypes.bits,
+    static All             = AllReflection.bits | AllTransmission.bits
+  }
+)
 
 pub struct BxDFBase {
     pub bxdf_type: BxDFType
@@ -59,7 +62,7 @@ pub trait BxDF<'a> {
     fn pdf(&'a self, wi: &Vector, wo: &Vector) -> f32;
 
     fn matches_flags(&'a self, flags: BxDFType) -> bool {
-        self.get_base().bxdf_type as uint & flags as uint == self.get_base().bxdf_type as uint
+        self.get_base().bxdf_type.contains(flags)
     }
 }
 
@@ -80,7 +83,7 @@ impl<'a> Bsdf<'a> {
         self.nbxdfs += 1;
     }
 
-    pub fn sample_f(woW: &Vector, wiW: &mut Vector, bsdf_sample: &BsdfSample, flags: BxDFType) -> (Spectrum, f32, BxDFType) {
+    pub fn sample_f(&'a self, woW: &Vector, wiW: &mut Vector, bsdf_sample: &BsdfSample, flags: BxDFType) -> (Spectrum, f32, BxDFType) {
         let matching_components = 0;
 
         if matching_components == 0 {

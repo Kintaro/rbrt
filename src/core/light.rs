@@ -1,4 +1,4 @@
-use geometry::{ Point, Vector, RayDifferential, round_up_pow_2 };
+use geometry::{ Point, Normal, Vector, RayDifferential, round_up_pow_2 };
 use scene::Scene;
 use spectrum::Spectrum;
 use transform::Transform;
@@ -27,4 +27,8 @@ pub trait Light<'a> {
 
         }
     }
+}
+
+pub trait AreaLight<'a> : Light<'a> {
+  fn L(&self, p: &Point, n: &Normal, w: &Vector) -> Spectrum;
 }

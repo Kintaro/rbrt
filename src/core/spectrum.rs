@@ -31,3 +31,9 @@ impl RgbSpectrum {
 }
 
 pub type Spectrum = Box<RgbSpectrum>;
+
+impl Add<RgbSpectrum, RgbSpectrum> for RgbSpectrum {
+  fn add(&self, rhs: &RgbSpectrum) -> RgbSpectrum {
+    fail!("not implemented");
+  }
+}
