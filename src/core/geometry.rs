@@ -223,13 +223,13 @@ pub struct Ray {
 
 impl Ray {
     pub fn zero() -> Ray {
-        Ray { 
-            o:     Point::zero(), 
-            d:     Vector::zero(), 
-            mint:  0.0, 
-            maxt:  f32::INFINITY, 
-            time:  0.0, 
-            depth: 0 
+        Ray {
+            o:     Point::zero(),
+            d:     Vector::zero(),
+            mint:  0.0,
+            maxt:  f32::INFINITY,
+            time:  0.0,
+            depth: 0
         }
     }
 
@@ -467,8 +467,8 @@ pub fn abs_dot<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T,
 pub fn cross<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T, b: S) -> Vector {
     let (v1x, v1y, v1z) = (a[0], a[1], a[2]);
     let (v2x, v2y, v2z) = (b[0], b[1], b[2]);
-    Vector::new((v1y * v2z) - (v1z * v2y), 
-        (v1z * v2x) - (v1x * v2z), 
+    Vector::new((v1y * v2z) - (v1z * v2y),
+        (v1z * v2x) - (v1x * v2z),
         (v1x * v2y) - (v1y * v2x))
 }
 
@@ -489,4 +489,16 @@ pub fn spherical_phi(v: &Vector) -> f32 {
     } else {
         p
     }
+}
+
+pub fn solve_linear_system(a: [[f32, ..2], ..2], b: [f32, ..2], x0: &mut f32, x1: &mut f32) -> bool {
+  let det = a[0][0] * a[1][1] - a[0][1] * a[1][0];
+  if det.abs() < 1e-10 {
+    return false;
+  }
+
+  *x0 = (a[1][1] * b[0] - a[0][1] * b[1]) / det;
+  *x1 = (a[0][0] * b[1] - a[1][0] * b[0]) / det;
+
+  !x0.is_nan() && !x1.is_nan()
 }
