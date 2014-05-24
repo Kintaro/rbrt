@@ -22,8 +22,12 @@ pub trait CoefficientSpectrum {
 
 }
 
-pub trait RgbSpectrum {
+pub struct RgbSpectrum;
 
+impl RgbSpectrum {
+  pub fn new(v: f32) -> RgbSpectrum {
+    RgbSpectrum
+  }
 }
 
 pub type Spectrum = Box<RgbSpectrum>;

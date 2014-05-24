@@ -1,3 +1,4 @@
+use diffgeom::DifferentialGeometry;
 use geometry::{ Normal, Vector };
 use rand::{ TaskRng, Rng };
 use sampler::Sample;
@@ -63,6 +64,8 @@ pub trait BxDF<'a> {
 }
 
 pub struct Bsdf<'a> {
+    pub dg_shading: DifferentialGeometry<'a>,
+    pub eta: f32,
     pub nn: Normal,
     pub ng: Normal,
     pub sn: Vector,

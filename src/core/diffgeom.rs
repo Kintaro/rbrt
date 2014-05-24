@@ -4,21 +4,21 @@ use geometry::{ Normal, Point, RayDifferential, Vector, dot, solve_linear_system
 use shape::Shape;
 
 pub struct DifferentialGeometry<'a> {
-    p:     Point,
-    nn:    Normal,
-    u:     f32,
-    v:     f32,
-    shape: Rc<Box<Shape<'a>>>,
-    dpdu:  Vector,
-    dpdv:  Vector,
-    dndu:  Normal,
-    dndv:  Normal,
-    dpdx:  Vector,
-    dpdy:  Vector,
-    dudx:  f32,
-    dvdx:  f32,
-    dudy:  f32,
-    dvdy:  f32
+    pub p:     Point,
+    pub nn:    Normal,
+    pub u:     f32,
+    pub v:     f32,
+    pub shape: Rc<Box<Shape<'a>>>,
+    pub dpdu:  Vector,
+    pub dpdv:  Vector,
+    pub dndu:  Normal,
+    pub dndv:  Normal,
+    pub dpdx:  Vector,
+    pub dpdy:  Vector,
+    pub dudx:  f32,
+    pub dvdx:  f32,
+    pub dudy:  f32,
+    pub dvdy:  f32
 }
 
 impl<'a> DifferentialGeometry<'a> {
@@ -71,7 +71,7 @@ impl<'a> DifferentialGeometry<'a> {
         a[0][1] = self.dpdu[axes[0]];
         a[1][0] = self.dpdu[axes[1]];
         a[1][1] = self.dpdu[axes[1]];
-        
+
         bx[0] = px[axes[0]] - self.p[axes[0]];
         bx[1] = px[axes[1]] - self.p[axes[1]];
         by[0] = py[axes[0]] - self.p[axes[0]];

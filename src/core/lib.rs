@@ -1,4 +1,4 @@
-#![crate_id="rbrt-core#0.0.2"]
+#![crate_id="rbrtcore#0.0.2"]
 #![comment = "RBRT Core Library"]
 #![license = "BSD"]
 #![crate_type = "lib"]
