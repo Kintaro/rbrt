@@ -248,6 +248,10 @@ pub struct RayDifferential {
 }
 
 impl RayDifferential {
+  pub fn new(r: &Ray) -> RayDifferential {
+    fail!("not implemented");
+  }
+
   pub fn apply(&self, t: f32) -> Point {
     self.ray.apply(t)
   }
