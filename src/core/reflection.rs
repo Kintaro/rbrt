@@ -57,7 +57,7 @@ pub trait BxDF<'a> {
   fn get_base_mut(&'a mut self) -> &'a mut BxDFBase;
 
   fn f(&'a self, wo: &Vector, wi: &Vector) -> Spectrum;
-  fn sample_f(&'a self, wo: &Vector, wi: &mut Vector, u1: f32, u2: f32) -> (Spectrum, f32);
+  fn sample_f(&'a self, wo: &Vector, wi: &mut Vector, u1: f32, u2: f32, pdf: &mut f32) -> (Spectrum, f32);
   fn rho(&'a self, wo: Vector, num_samples: uint, samples: &[f32]) -> Spectrum;
   fn rho2(&'a self, num_samples: uint, samples1: &[f32], samples2: &[f32]) -> Spectrum;
   fn pdf(&'a self, wi: &Vector, wo: &Vector) -> f32;
@@ -88,8 +88,14 @@ impl<'a> Bsdf<'a> {
     Vector::new(dot(*v, self.sn), dot(*v, self.tn), dot(*v, self.nn))
   }
 
+  pub fn local_to_world(&'a self, v: &Vector) -> Vector {
+    Vector::new(self.sn.x * v.x + self.tn.x * v.y + self.nn.x * v.z,
+      self.sn.y * v.x + self.tn.y * v.y + self.nn.y * v.z,
+      self.sn.z * v.x + self.tn.z * v.z + self.nn.z * v.z)
+  }
+
   pub fn sample_f(&'a self, woW: &Vector, wiW: &mut Vector, bsdf_sample: &BsdfSample,
-    pdf: &mut f32, flags: BxDFType) -> (Spectrum, BxDFType) {
+    pdf: &mut f32, flags: &mut BxDFType) -> (Spectrum, BxDFType) {
     let matching_components = 0;
 
     if matching_components == 0 {
@@ -105,7 +111,7 @@ impl<'a> Bsdf<'a> {
     for i in range(0, n) {
       match self.bxdfs[i] {
         Some(ref x) => {
-          if x.matches_flags(flags) && count == 0 {
+          if x.matches_flags(*flags) && count == 0 {
             count -= 1;
             bxdf = Some(x);
             break;
@@ -119,9 +125,35 @@ impl<'a> Bsdf<'a> {
 
     let wo = self.world_to_local(woW);
     let mut wi = Vector::new(0.0, 0.0, 0.0);
-    let f = bxdf.unwrap().sample_f(wo, wi, bsdf_sample.udir.val0(),
+    let (mut f, _) = bxdf.unwrap().sample_f(&wo, &mut wi, bsdf_sample.udir.val0(),
       bsdf_sample.udir.val1(), pdf);
 
-    fail!("");
+    if *pdf == 0.0 {
+      return (box RgbSpectrum::new(0.0), NoType);
+    }
+
+    *wiW = self.local_to_world(&wi);
+
+    if bxdf.unwrap().get_base().bxdf_type & Specular != NoType {
+      f = box RgbSpectrum::new(0.0);
+      if dot(*wiW, self.ng) * dot(*woW, self.ng) > 0.0 {
+        *flags = *flags - Transmission;
+      } else {
+        *flags = *flags - Reflection;
+      }
+
+      for i in range(0, self.nbxdfs) {
+        match self.bxdfs[i] {
+          Some(ref x) => {
+            if x.matches_flags(*flags) {
+              *f = *f + *x.f(&wo, &wi);
+            }
+          },
+          None => ()
+        }
+      }
+    }
+
+    (f, bxdf.unwrap().get_base().bxdf_type)
   }
 }

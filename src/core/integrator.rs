@@ -32,7 +32,7 @@ pub fn specular_reflect<'a>(ray: &RayDifferential, bsdf: &'a Bsdf<'a>,
   let n = bsdf.dg_shading.nn;
   let mut pdf = 0.0;
   let (f, _) = bsdf.sample_f(&wo, &mut wi, &BsdfSample::from_random(rng),
-    &mut pdf, Reflection | Specular);
+    &mut pdf, &mut(Reflection | Specular));
 
   let mut l = RgbSpectrum::new(0.0);
 
@@ -53,5 +53,6 @@ pub fn specular_transmit<'a>(ray: &RayDifferential, bsdf: &'a Bsdf<'a>,
   let p = bsdf.dg_shading.p;
   let n = bsdf.dg_shading.nn;
   let mut pdf = 0.0;
-  let f = bsdf.sample_f(&wo, &mut wi, &BsdfSample::from_random(rng), &mut pdf, Transmission | Specular);
+  let (f, _) = bsdf.sample_f(&wo, &mut wi, &BsdfSample::from_random(rng),
+    &mut pdf, &mut (Transmission | Specular));
 }
