@@ -1,7 +1,22 @@
-use geometry::{ Point, Normal, Vector, RayDifferential, round_up_pow_2 };
+use geometry::{ Point, Normal, Vector, Ray, RayDifferential, round_up_pow_2 };
+use renderer::Renderer;
+use sampler::Sample;
 use scene::Scene;
 use spectrum::Spectrum;
 use transform::Transform;
+
+use rand::{ TaskRng, Rng };
+
+pub struct LightSample {
+  upos: (f32, f32),
+  ucomponent: f32
+}
+
+impl LightSample {
+  pub fn from_random(rng: &mut TaskRng) -> LightSample {
+    LightSample { upos: rng.gen(), ucomponent: rng.gen() }
+  }
+}
 
 pub struct LightBase {
   num_samples: uint,
@@ -27,8 +42,30 @@ pub trait Light<'a> {
 
     }
   }
+
+  fn sample_l(&'a self, p: &Point, p_epsilon: f32, ls: &LightSample, time: f32,
+      wi: &mut Vector, pdf: &mut f32, vis: &mut VisibilityTester) -> Spectrum;
 }
 
 pub trait AreaLight<'a> : Light<'a> {
   fn L(&self, p: &Point, n: &Normal, w: &Vector) -> Spectrum;
+}
+
+pub struct VisibilityTester {
+  pub r: Ray
+}
+
+impl VisibilityTester {
+  pub fn new() -> VisibilityTester {
+    VisibilityTester { r: Ray::zero() }
+  }
+
+  pub fn unoccluded(&self, scene: &Scene) -> bool {
+    fail!("not implemented");
+  }
+
+  pub fn transmittance(&self, scene: &Scene, renderer: &Renderer, sample: &Sample,
+      rng: &mut TaskRng) -> Spectrum {
+    fail!("not implemented");
+  }
 }

@@ -25,4 +25,8 @@ impl ParamSet {
   pub fn erase_float(&mut self, name: &StrBuf) {
     self.floats.retain(|x| x.name != *name);
   }
+
+  pub fn find_one_int(&self, name: &str, default: int) -> int {
+    fail!("not implemented")
+  }
 }

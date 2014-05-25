@@ -41,3 +41,25 @@ impl Add<RgbSpectrum, RgbSpectrum> for RgbSpectrum {
     fail!("not implemented");
   }
 }
+
+pub trait SpectrumRhsMul<S> {
+  fn mul_with_spectrum(&self, lhs: &RgbSpectrum) -> S;
+}
+
+impl<S, R: SpectrumRhsMul<S>> Mul<R, S> for RgbSpectrum {
+  fn mul(&self, rhs: &R) -> S {
+    rhs.mul_with_spectrum(self)
+  }
+}
+
+impl SpectrumRhsMul<RgbSpectrum> for f32 {
+  fn mul_with_spectrum(&self, lhs: &RgbSpectrum) -> RgbSpectrum {
+    RgbSpectrum::new(0.0)
+  }
+}
+
+impl SpectrumRhsMul<RgbSpectrum> for RgbSpectrum {
+  fn mul_with_spectrum(&self, lhs: &RgbSpectrum) -> RgbSpectrum {
+    RgbSpectrum::new(0.0)
+  }
+}

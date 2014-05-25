@@ -8,13 +8,13 @@ use spectrum::{ Spectrum, RgbSpectrum };
 use transform::Transform;
 
 pub struct Intersection<'a> {
-  dg:        DifferentialGeometry<'a>,
-  primitive:     Option<Rc<Box<Primitive>>>,
-  world_to_object: Transform,
-  object_to_world: Transform,
-  shape_id:    uint,
-  primitive_id:  uint,
-  ray_epsilon:   f32
+  pub dg:              DifferentialGeometry<'a>,
+  pub primitive:       Option<Rc<Box<Primitive>>>,
+  pub world_to_object: Transform,
+  pub object_to_world: Transform,
+  pub shape_id:        uint,
+  pub primitive_id:    uint,
+  pub ray_epsilon:     f32
 }
 
 impl<'a> Intersection<'a> {

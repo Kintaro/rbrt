@@ -156,4 +156,8 @@ impl<'a> Bsdf<'a> {
 
     (f, bxdf.unwrap().get_base().bxdf_type)
   }
+
+  pub fn f(&self, woW: &Vector, wiW: &Vector, flags: BxDFType) -> Spectrum {
+    fail!("not implemented");
+  }
 }

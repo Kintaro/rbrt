@@ -17,7 +17,7 @@ pub trait Integrator {
 }
 
 pub trait SurfaceIntegrator : Integrator {
-  fn Li(&self, scene: &Scene, renderer: &Renderer, ray: &RayDifferential,
+  fn Li<'a>(&self, scene: &'a Scene<'a>, renderer: &Renderer, ray: &RayDifferential,
     intersection: &mut Intersection, sample: &Sample, rng: &mut TaskRng) -> Spectrum;
 }
 
