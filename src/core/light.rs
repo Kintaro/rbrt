@@ -4,6 +4,7 @@ use renderer::Renderer;
 use sampler::Sample;
 use scene::Scene;
 use spectrum::{ RgbSpectrum, Spectrum };
+use spherical::sh_terms;
 use transform::Transform;
 
 use rand::{ TaskRng, Rng };
@@ -75,7 +76,9 @@ pub trait Light<'a> {
 
       if !li.is_black() && pdf > 0.0 &&
           (!compute_light_visibility || vis.unoccluded(scene)) {
-        fail!("not implemented");
+        for j in range(0, sh_terms(lmax as int)) {
+
+        }
       }
     }
   }

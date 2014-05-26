@@ -27,4 +27,5 @@ pub mod scene;
 pub mod shape;
 pub mod spectrum;
 pub mod spectrum_consts;
+pub mod spherical;
 pub mod transform;
