@@ -7,7 +7,7 @@ use reflection::{ BsdfSample, Bsdf, BxDFType, Transmission, Reflection, Specular
 use renderer::Renderer;
 use sampler::Sample;
 use scene::Scene;
-use spectrum::{ RgbSpectrum, Spectrum };
+use spectrum::Spectrum;
 
 use rand::TaskRng;
 
@@ -34,13 +34,13 @@ pub fn specular_reflect<'a>(ray: &RayDifferential, bsdf: &'a Bsdf<'a>,
   let (f, _) = bsdf.sample_f(&wo, &mut wi, &BsdfSample::from_random(rng),
     &mut pdf, &mut(Reflection | Specular));
 
-  let mut l = RgbSpectrum::new(0.0);
+  let mut l = Spectrum::new(0.0);
 
   if pdf > 0.0 && !f.is_black() && abs_dot(wi, n) != 0.0 {
 
   }
 
-  return box l;
+  return l;
 }
 
 pub fn specular_transmit<'a>(ray: &RayDifferential, bsdf: &'a Bsdf<'a>,

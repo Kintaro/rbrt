@@ -2,7 +2,7 @@ use diffgeom::DifferentialGeometry;
 use geometry::{ Normal, Vector, dot };
 use rand::{ TaskRng, Rng };
 use sampler::Sample;
-use spectrum::{ RgbSpectrum, Spectrum };
+use spectrum::Spectrum;
 
 pub struct BsdfSample {
   pub udir: (f32, f32),
@@ -101,7 +101,7 @@ impl<'a> Bsdf<'a> {
     if matching_components == 0 {
       *pdf = 0.0;
 
-      return (box RgbSpectrum::new(0.0), NoType);
+      return (Spectrum::new(0.0), NoType);
     }
 
     let mut bxdf : Option<&Box<BxDF<'a>>> = None;
@@ -129,13 +129,13 @@ impl<'a> Bsdf<'a> {
       bsdf_sample.udir.val1(), pdf);
 
     if *pdf == 0.0 {
-      return (box RgbSpectrum::new(0.0), NoType);
+      return (Spectrum::new(0.0), NoType);
     }
 
     *wiW = self.local_to_world(&wi);
 
     if bxdf.unwrap().get_base().bxdf_type & Specular != NoType {
-      f = box RgbSpectrum::new(0.0);
+      f = Spectrum::new(0.0);
       if dot(*wiW, self.ng) * dot(*woW, self.ng) > 0.0 {
         *flags = *flags - Transmission;
       } else {
@@ -146,7 +146,7 @@ impl<'a> Bsdf<'a> {
         match self.bxdfs[i] {
           Some(ref x) => {
             if x.matches_flags(*flags) {
-              *f = *f + *x.f(&wo, &wi);
+              f = f + x.f(&wo, &wi);
             }
           },
           None => ()

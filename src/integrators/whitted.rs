@@ -64,16 +64,16 @@ impl SurfaceIntegrator for WhittedIntegrator {
       let f = bsdf.f(&wo, &wi, AllTypes);
 
       if !f.is_black() && visibility.unoccluded(scene) {
-        *L = *L + *f * *li *
-          (*visibility.transmittance(scene, renderer, sample, rng) * (abs_dot(wi, n) / pdf));
+        L = L + f * li *
+          (visibility.transmittance(scene, renderer, sample, rng) * (abs_dot(wi, n) / pdf));
       }
     }
 
     if ray.ray.depth + 1 < self.max_depth {
       // Trace rays for specular reflection and refraction
-      *L = *L + *specular_reflect(ray, &bsdf, rng, intersection, renderer,
+      L = L + specular_reflect(ray, &bsdf, rng, intersection, renderer,
         scene, sample);
-      *L = *L + *specular_transmit(ray, &bsdf, rng, intersection, renderer,
+      L = L + specular_transmit(ray, &bsdf, rng, intersection, renderer,
         scene, sample);
     }
 

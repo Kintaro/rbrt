@@ -1,10 +1,10 @@
-use geometry::{ Point, Normal, Vector, Ray, RayDifferential, round_up_pow_2 };
+use geometry::{ Point, Normal, Vector, Ray, RayDifferential, distance, round_up_pow_2 };
 use montecarlo::van_der_corput;
 use renderer::Renderer;
 use sampler::Sample;
 use scene::Scene;
-use spectrum::{ RgbSpectrum, Spectrum };
-use spherical::sh_terms;
+use spectrum::Spectrum;
+use spherical::{ sh_terms, sh_evaluate };
 use transform::Transform;
 
 use rand::{ TaskRng, Rng };
@@ -54,15 +54,18 @@ pub trait Light<'a> {
   fn pdf(&'a self, p: &Point, wi: &Vector) -> f32;
 
   fn Le(&'a self, ray: &RayDifferential) -> Spectrum {
-    box RgbSpectrum::new(0.0)
+    Spectrum::new(0.0)
   }
 
   fn sh_project(&'a self, p: &Point, p_epsilon: f32, lmax: uint, scene: &Scene,
       compute_light_visibility: bool, time: f32,
-      rng: &mut TaskRng, coeffs: &mut Vec<Spectrum>) {
+      rng: &mut TaskRng, coeffs_v: &mut Vec<Spectrum>) {
     let ns = round_up_pow_2(self.get_base().num_samples);
     let scramble1D = rng.gen::<uint>();
     let scramble2D = rng.gen::<(uint, uint)>();
+    let mut ylm = Vec::from_elem(sh_terms(lmax as int), 0.0f32);
+    let len = coeffs_v.len();
+    let mut coeffs = coeffs_v.mut_slice(0, len);
 
     for i in range(0, ns) {
       let u = (0.0, 0.0);
@@ -76,8 +79,9 @@ pub trait Light<'a> {
 
       if !li.is_black() && pdf > 0.0 &&
           (!compute_light_visibility || vis.unoccluded(scene)) {
+        sh_evaluate(&wi, lmax as int, &mut ylm);
         for j in range(0, sh_terms(lmax as int)) {
-
+          coeffs[j] = coeffs[j] + (li * *ylm.get(j) / (pdf * ns as f32));
         }
       }
     }
@@ -107,5 +111,10 @@ impl VisibilityTester {
   pub fn transmittance(&self, scene: &Scene, renderer: &Renderer, sample: &Sample,
       rng: &mut TaskRng) -> Spectrum {
     renderer.transmittance(scene, &RayDifferential::new(&self.r), sample, rng)
+  }
+
+  pub fn set_segment(&mut self, p1: &Point, eps1: f32, p2: &Point, eps2: f32, time: f32) {
+    let dist = distance(p1, p2);
+    self.r = Ray::new(p1, &((p2 - *p1) / dist), eps1, dist * (1.0 - eps2), time);
   }
 }

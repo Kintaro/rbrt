@@ -4,7 +4,7 @@ use diffgeom::DifferentialGeometry;
 use geometry::{ RayDifferential, Vector };
 use primitive::Primitive;
 use reflection::Bsdf;
-use spectrum::{ Spectrum, RgbSpectrum };
+use spectrum::Spectrum;
 use transform::Transform;
 
 pub struct Intersection<'a> {
@@ -26,7 +26,7 @@ impl<'a> Intersection<'a> {
   pub fn Le(&self, wo: &Vector) -> Spectrum {
     match self.primitive.get_ref().get_area_light() {
       Some(x) => x.L(&self.dg.p, &self.dg.nn, wo),
-      None    => box RgbSpectrum::new(0.0)
+      None    => Spectrum::new(0.0)
     }
   }
 }

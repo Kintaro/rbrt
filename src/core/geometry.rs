@@ -233,6 +233,10 @@ impl Ray {
     }
   }
 
+  pub fn new(o: &Point, d: &Vector, mint: f32, maxt: f32, time: f32) -> Ray {
+    Ray { o: *o, d: *d, mint: mint, maxt: maxt, time: time, depth: 1 }
+  }
+
   pub fn apply(&self, t: f32) -> Point {
     self.o + self.d * t
   }

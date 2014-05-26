@@ -116,3 +116,32 @@ pub fn divfact(a: int, b: int) -> f32 {
 
   1.0 / v
 }
+
+pub fn dfact(v: f32) -> f32 {
+  if v <= 1.0 {
+    1.0
+  } else {
+    v * dfact(v - 2.0)
+  }
+}
+
+pub fn fact(v : f32) -> f32 {
+  if v <= 1.0 {
+    1.0
+  } else {
+    v * fact(v - 1.0)
+  }
+}
+
+pub fn sin_cos_indexed(s: f32, c: f32, n: uint, sout: &mut [f32], cout: &mut [f32]) {
+  let mut si = 0.0;
+  let mut ci = 1.0;
+
+  for i in range(0, n) {
+    sout[i] = si;
+    cout[i] = ci;
+    let oldsi = si;
+    si = si * c + ci * s;
+    ci = ci * c - oldsi * s;
+  }
+}

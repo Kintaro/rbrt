@@ -22,11 +22,12 @@ pub trait CoefficientSpectrum {
 
 }
 
-pub struct RgbSpectrum;
+#[deriving(Clone)]
+pub struct Spectrum;
 
-impl RgbSpectrum {
-  pub fn new(v: f32) -> RgbSpectrum {
-    RgbSpectrum
+impl Spectrum {
+  pub fn new(v: f32) -> Spectrum {
+    Spectrum
   }
 
   pub fn is_black(&self) -> bool {
@@ -34,32 +35,52 @@ impl RgbSpectrum {
   }
 }
 
-pub type Spectrum = Box<RgbSpectrum>;
-
-impl Add<RgbSpectrum, RgbSpectrum> for RgbSpectrum {
-  fn add(&self, rhs: &RgbSpectrum) -> RgbSpectrum {
+impl Add<Spectrum, Spectrum> for Spectrum {
+  fn add(&self, rhs: &Spectrum) -> Spectrum {
     fail!("not implemented");
   }
 }
 
 pub trait SpectrumRhsMul<S> {
-  fn mul_with_spectrum(&self, lhs: &RgbSpectrum) -> S;
+  fn mul_with_spectrum(&self, lhs: &Spectrum) -> S;
 }
 
-impl<S, R: SpectrumRhsMul<S>> Mul<R, S> for RgbSpectrum {
+impl<S, R: SpectrumRhsMul<S>> Mul<R, S> for Spectrum {
   fn mul(&self, rhs: &R) -> S {
     rhs.mul_with_spectrum(self)
   }
 }
 
-impl SpectrumRhsMul<RgbSpectrum> for f32 {
-  fn mul_with_spectrum(&self, lhs: &RgbSpectrum) -> RgbSpectrum {
-    RgbSpectrum::new(0.0)
+impl SpectrumRhsMul<Spectrum> for f32 {
+  fn mul_with_spectrum(&self, lhs: &Spectrum) -> Spectrum {
+    Spectrum::new(0.0)
   }
 }
 
-impl SpectrumRhsMul<RgbSpectrum> for RgbSpectrum {
-  fn mul_with_spectrum(&self, lhs: &RgbSpectrum) -> RgbSpectrum {
-    RgbSpectrum::new(0.0)
+impl SpectrumRhsMul<Spectrum> for Spectrum {
+  fn mul_with_spectrum(&self, lhs: &Spectrum) -> Spectrum {
+    Spectrum::new(0.0)
+  }
+}
+
+pub trait SpectrumRhsDiv<S> {
+  fn div_with_spectrum(&self, lhs: &Spectrum) -> S;
+}
+
+impl<S, R: SpectrumRhsDiv<S>> Div<R, S> for Spectrum {
+  fn div(&self, rhs: &R) -> S {
+    rhs.div_with_spectrum(self)
+  }
+}
+
+impl SpectrumRhsDiv<Spectrum> for f32 {
+  fn div_with_spectrum(&self, lhs: &Spectrum) -> Spectrum {
+    Spectrum::new(0.0)
+  }
+}
+
+impl SpectrumRhsDiv<Spectrum> for Spectrum {
+  fn div_with_spectrum(&self, lhs: &Spectrum) -> Spectrum {
+    Spectrum::new(0.0)
   }
 }
