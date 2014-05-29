@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 
-use geometry::{ Normal, Point, RayDifferential, Vector, dot, solve_linear_system };
+use geometry::{ Normal, Point, RayDifferential, Vector, normalize, cross, dot, solve_linear_system };
 use shape::Shape;
 
 #[deriving(Clone)]
@@ -10,7 +10,7 @@ pub struct DifferentialGeometry {
   pub nn:    Normal,
   pub u:     f32,
   pub v:     f32,
-  pub shape: Rc<RefCell<Box<Shape>>>,
+  pub shape: Option<Rc<RefCell<Box<Shape>>>>,
   pub dpdu:  Vector,
   pub dpdv:  Vector,
   pub dndu:  Normal,
@@ -24,6 +24,31 @@ pub struct DifferentialGeometry {
 }
 
 impl DifferentialGeometry {
+  pub fn new(p: Point, dpdu: Vector, dpdv: Vector,
+      dndu: Normal, dndv: Normal, u: f32, v: f32,
+      sh: Option<Rc<RefCell<Box<Shape>>>>) -> DifferentialGeometry {
+    let mut n = Normal::from_vector(&normalize(cross(dpdu, dpdv)));
+
+    match sh {
+      Some(ref x) => {
+        if x.borrow().get_base().reverse_orientation ^ x.borrow().get_base().transform_swaps_handedness {
+          n = -n;
+        }
+      },
+      None => ()
+    }
+
+    DifferentialGeometry {
+      p: p, nn: n, u: u, v: v, shape: sh,
+      dpdu: dpdu, dpdv: dpdv, dndu: dndu, dndv: dndv,
+      dpdx: Vector::zero(),
+      dpdy: Vector::zero(),
+      dudx: 0.0,
+      dvdx: 0.0,
+      dudy: 0.0,
+      dvdy: 0.0
+    }
+  }
   pub fn compute_differentials(&mut self, ray: &RayDifferential) {
     if !ray.has_differentials {
       self.reset();
@@ -99,10 +124,16 @@ impl DifferentialGeometry {
   }
 
   pub fn reverse_orientation(&self) -> bool {
-    self.shape.borrow().get_base().reverse_orientation
+    match self.shape {
+      None => false,
+      Some(ref x) => x.borrow().get_base().reverse_orientation
+    }
   }
 
   pub fn transform_swaps_handedness(&self) -> bool {
-    self.shape.borrow().get_base().transform_swaps_handedness
+    match self.shape {
+      None => false,
+      Some(ref x) => x.borrow().get_base().transform_swaps_handedness
+    }
   }
 }

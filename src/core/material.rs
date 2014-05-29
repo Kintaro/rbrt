@@ -51,18 +51,11 @@ pub fn bump(d: &Texture<f32>, dg_geom: &DifferentialGeometry,
   let y = dg_bump.transform_swaps_handedness();
 
   if x ^ y {
-    dg_bump.nn = dg_bump.nn * -1.0;
+    dg_bump.nn = -dg_bump.nn;
   }
 
   // Orient shading normal to match geometric normal
   dg_bump.nn = face_forward(dg_bump.nn, dg_geom.nn);
 
   return dg_bump;
-}
-
-fn needs_reversing(dg: DifferentialGeometry) -> bool {
-  let s = dg.shape;
-  let b = s.borrow();
-  let x = b.get_base().reverse_orientation;
-  true
 }

@@ -161,3 +161,5 @@ impl<'a> Bsdf<'a> {
     fail!("not implemented");
   }
 }
+
+pub struct Bssrdf;

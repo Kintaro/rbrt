@@ -41,8 +41,8 @@ impl SurfaceIntegrator for WhittedIntegrator {
     let bsdf = intersection.get_bsdf(ray);
 
     // Initialize common variables for whitted integrator
-    let p = bsdf.dg_shading.p;
-    let n = bsdf.dg_shading.nn;
+    let p = bsdf.get_ref().dg_shading.p;
+    let n = bsdf.get_ref().dg_shading.nn;
     let wo = -ray.ray.d;
 
     // Compute emitted light if ray hit an area light source
@@ -61,7 +61,7 @@ impl SurfaceIntegrator for WhittedIntegrator {
         continue;
       }
 
-      let f = bsdf.f(&wo, &wi, AllTypes);
+      let f = bsdf.get_ref().f(&wo, &wi, AllTypes);
 
       if !f.is_black() && visibility.unoccluded(scene) {
         L = L + f * li *
@@ -71,9 +71,9 @@ impl SurfaceIntegrator for WhittedIntegrator {
 
     if ray.ray.depth + 1 < self.max_depth {
       // Trace rays for specular reflection and refraction
-      L = L + specular_reflect(ray, &bsdf, rng, intersection, renderer,
+      L = L + specular_reflect(ray, bsdf.get_ref(), rng, intersection, renderer,
         scene, sample);
-      L = L + specular_transmit(ray, &bsdf, rng, intersection, renderer,
+      L = L + specular_transmit(ray, bsdf.get_ref(), rng, intersection, renderer,
         scene, sample);
     }
 
