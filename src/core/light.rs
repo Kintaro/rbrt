@@ -1,5 +1,5 @@
 use geometry::{ Point, Normal, Vector, Ray, RayDifferential, distance, round_up_pow_2 };
-use montecarlo::van_der_corput;
+use montecarlo::{ sample02, van_der_corput };
 use renderer::Renderer;
 use sampler::Sample;
 use scene::Scene;
@@ -7,6 +7,7 @@ use spectrum::Spectrum;
 use spherical::{ sh_terms, sh_evaluate };
 use transform::Transform;
 
+use std::f32::INFINITY;
 use rand::{ TaskRng, Rng };
 
 pub struct LightSampleOffsets {
@@ -68,7 +69,8 @@ pub trait Light<'a> {
     let mut coeffs = coeffs_v.mut_slice(0, len);
 
     for i in range(0, ns) {
-      let u = (0.0, 0.0);
+      let mut u = (0.0, 0.0);
+      sample02(i, scramble2D, &mut u);
       let light_sample = LightSample::new(u.val0(), u.val1(),
         van_der_corput(i, scramble1D));
       let mut vis = VisibilityTester::new();
@@ -116,5 +118,9 @@ impl VisibilityTester {
   pub fn set_segment(&mut self, p1: &Point, eps1: f32, p2: &Point, eps2: f32, time: f32) {
     let dist = distance(p1, p2);
     self.r = Ray::new(p1, &((p2 - *p1) / dist), eps1, dist * (1.0 - eps2), time);
+  }
+
+  pub fn set_ray(&mut self, p: &Point, eps: f32, w: &Vector, time: f32) {
+    self.r = Ray::new(p, w, eps, INFINITY, time);
   }
 }

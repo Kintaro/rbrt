@@ -7,8 +7,8 @@ use reflection::Bsdf;
 use spectrum::Spectrum;
 use transform::Transform;
 
-pub struct Intersection<'a> {
-  pub dg:              DifferentialGeometry<'a>,
+pub struct Intersection {
+  pub dg:              DifferentialGeometry,
   pub primitive:       Option<Rc<Box<Primitive>>>,
   pub world_to_object: Transform,
   pub object_to_world: Transform,
@@ -17,7 +17,7 @@ pub struct Intersection<'a> {
   pub ray_epsilon:     f32
 }
 
-impl<'a> Intersection<'a> {
+impl Intersection {
   pub fn get_bsdf(&mut self, ray: &RayDifferential) -> Bsdf {
     self.dg.compute_differentials(ray);
     self.primitive.get_mut_ref().get_bsdf(&self.dg, &self.object_to_world)

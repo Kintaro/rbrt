@@ -7,17 +7,17 @@ fn not_one(x: f32) -> bool {
   x < 0.999 || x > 1.001
 }
 
+#[deriving(Clone)]
 pub struct Matrix {
-  m: [[f32, ..4], ..4]
+  m: ~[f32]
 }
 
-#[deriving(Clone)]
 impl Matrix {
   pub fn zero() -> Matrix {
-    Matrix { m: [[0.0, ..4], [0.0, ..4], [0.0, ..4], [0.0, ..4]] }
+    Matrix { m: box [0.0, ..16] }
   }
 
-  pub fn from_data(d: [[f32, ..4], ..4]) -> Matrix {
+  pub fn from_data(d: ~[f32]) -> Matrix {
     Matrix { m: d }
   }
 
@@ -26,28 +26,28 @@ impl Matrix {
     t20: f32, t21: f32, t22: f32, t23: f32,
     t30: f32, t31: f32, t32: f32, t33: f32) -> Matrix {
 
-    Matrix { m: [[t00, t01, t02, t03],
-      [t10, t11, t12, t13],
-      [t20, t21, t22, t23],
-      [t30, t31, t32, t33]] }
+    Matrix { m: box [t00, t01, t02, t03,
+      t10, t11, t12, t13,
+      t20, t21, t22, t23,
+      t30, t31, t32, t33] }
   }
 
   pub fn transpose(m: &Matrix) -> Matrix {
-    Matrix::new(m.m[0][0], m.m[1][0], m.m[2][0], m.m[3][0],
-          m.m[0][1], m.m[1][1], m.m[2][1], m.m[3][1],
-          m.m[0][2], m.m[1][2], m.m[2][2], m.m[3][2],
-          m.m[0][3], m.m[1][3], m.m[2][3], m.m[3][3])
+    Matrix::new(m.m[0* 4 + 0], m.m[1* 4 + 0], m.m[2* 4 + 0], m.m[3* 4 + 0],
+          m.m[0* 4 + 1], m.m[1* 4 + 1], m.m[2* 4 + 1], m.m[3* 4 + 1],
+          m.m[0* 4 + 2], m.m[1* 4 + 2], m.m[2* 4 + 2], m.m[3* 4 + 2],
+          m.m[0* 4 + 3], m.m[1* 4 + 3], m.m[2* 4 + 3], m.m[3* 4 + 3])
   }
 
   pub fn inverse(m: &Matrix) -> Matrix {
     let mut indxc = [0, ..4];
     let mut indxr = [0, ..4];
-    let mut minv  = [[0.0f32, ..4], ..4];
+    let mut minv  = box [0.0f32, ..16];
     let mut ipiv  = [0, ..4];
 
     for i in range(0u, 4) {
       for j in range(0u, 4) {
-        minv[i][j] = m.m[i][j];
+        minv[i * 4 + j] = m.m[i * 4 + j];
       }
     }
 
@@ -63,11 +63,11 @@ impl Matrix {
 
         for k in range(0u, 4) {
           if ipiv[k] == 0 {
-            if minv[j][k].abs() < big {
+            if minv[j * 4 + k].abs() < big {
               continue;
             }
 
-            big = minv[j][k].abs();
+            big = minv[j * 4 + k].abs();
             irow = j;
             icol = k;
           } else if ipiv[k] > 1 {
@@ -80,24 +80,24 @@ impl Matrix {
 
       if irow != icol {
         for k in range(0u, 4) {
-          let t = minv[irow][k];
-          minv[irow][k] = minv[icol][k];
-          minv[icol][k] = t;
+          let t = minv[irow * 4 + k];
+          minv[irow * 4 + k] = minv[icol * 4 + k];
+          minv[icol * 4 + k] = t;
         }
       }
 
       indxr[i] = irow;
       indxc[i] = icol;
 
-      if minv[icol][icol] == 0.0 {
+      if minv[icol * 4 + icol] == 0.0 {
         fail!("Singular matrix in Matrix::inverse");
       }
 
-      let pivinv = 1.0 / minv[icol][icol];
-      minv[icol][icol] = 1.0;
+      let pivinv = 1.0 / minv[icol * 4 + icol];
+      minv[icol * 4 + icol] = 1.0;
 
       for j in range(0u, 4) {
-        minv[icol][j] *= pivinv;
+        minv[icol * 4 + j] *= pivinv;
       }
 
       for j in range(0u, 4) {
@@ -105,11 +105,11 @@ impl Matrix {
           continue;
         }
 
-        let save = minv[j][icol];
-        minv[j][icol] = 0.0;
+        let save = minv[j * 4 + icol];
+        minv[j * 4 + icol] = 0.0;
 
         for k in range(0u, 4) {
-          minv[j][k] -= minv[icol][k] * save;
+          minv[j * 4 + k] -= minv[icol * 4 + k] * save;
         }
       }
     }
@@ -122,9 +122,9 @@ impl Matrix {
       }
 
       for k in range(0u, 4) {
-        let t = minv[k][indxr[j]];
-        minv[k][indxr[j]] = minv[k][indxc[j]];
-        minv[k][indxc[j]] = t;
+        let t = minv[k * 4 + indxr[j]];
+        minv[k * 4 + indxr[j]] = minv[k * 4 + indxc[j]];
+        minv[k * 4 + indxc[j]] = t;
       }
     }
 
@@ -144,11 +144,11 @@ impl Mul<Matrix, Matrix> for Matrix {
 
     for i in range(0u, 4) {
       for j in range(0u, 4) {
-        r.m[i][j] =
-          self.m[i][0] * m.m[0][j] +
-          self.m[i][1] * m.m[1][j] +
-          self.m[i][2] * m.m[2][j] +
-          self.m[i][3] * m.m[3][j];
+        r.m[i* 4 + j] =
+          self.m[i * 4 + 0] * m.m[0 * 4 + j] +
+          self.m[i * 4 + 1] * m.m[1 * 4 + j] +
+          self.m[i * 4 + 2] * m.m[2 * 4 + j] +
+          self.m[i * 4 + 3] * m.m[3 * 4 + j];
       }
     }
 
@@ -178,15 +178,15 @@ impl<S, R: TransformRhs<S>> Applicable<R, S> for Transform {
   }
 }
 
+#[deriving(Clone)]
 pub struct Transform {
   m: Matrix,
   m_inv: Matrix,
 }
 
-#[deriving(Clone)]
 impl Transform {
   pub fn from_matrix(m: Matrix) -> Transform {
-    Transform { m: m, m_inv: m }
+    Transform { m: m.clone(), m_inv: m.clone() }
   }
 
   pub fn new(m: Matrix, m_inv: Matrix) -> Transform {
@@ -194,7 +194,7 @@ impl Transform {
   }
 
   pub fn inverse(t: &Transform) -> Transform {
-    Transform::new(t.m_inv, t.m)
+    Transform::new(t.m_inv.clone(), t.m.clone())
   }
 
   pub fn transpose(t: &Transform) -> Transform {
@@ -225,10 +225,10 @@ impl Transform {
       0.0, 0.0, 0.0, 1.0);
 
     let m_inv = Matrix::new(
-      1.0 / x,   0.0,   0.0, 0.0,
-        0.0, 1.0 / y,   0.0, 0.0,
-        0.0,   0.0, 1.0 / z, 0.0,
-        0.0,   0.0,   0.0, 1.0);
+      1.0 / x,     0.0,     0.0, 0.0,
+          0.0, 1.0 / y,     0.0, 0.0,
+          0.0,     0.0, 1.0 / z, 0.0,
+          0.0,     0.0,     0.0, 1.0);
 
     Transform::new(m, m_inv)
   }
@@ -243,7 +243,7 @@ impl Transform {
       0.0, sin_t,  cos_t, 0.0,
       0.0,   0.0,  0.0, 1.0);
 
-    Transform::new(m, Matrix::transpose(&m))
+    Transform::new(m.clone(), Matrix::transpose(&m.clone()))
   }
 
   pub fn rotate_y(angle: f32) -> Transform {
@@ -256,7 +256,7 @@ impl Transform {
       -sin_t, 0.0, cos_t, 0.0,
          0.0, 0.0,   0.0, 1.0);
 
-    Transform::new(m, Matrix::transpose(&m))
+    Transform::new(m.clone(), Matrix::transpose(&m.clone()))
   }
 
   pub fn rotate_z(angle: f32) -> Transform {
@@ -269,7 +269,7 @@ impl Transform {
         0.0,   0.0,  1.0, 0.0,
         0.0,   0.0,  0.0, 1.0);
 
-    Transform::new(m, Matrix::transpose(&m))
+    Transform::new(m.clone(), Matrix::transpose(&m.clone()))
   }
 
   pub fn rotate(angle: f32, axis: &Vector) -> Transform {
@@ -277,56 +277,59 @@ impl Transform {
     let s = radians(angle).sin();
     let c = radians(angle).sin();
 
-    let mut d = [[0.0, ..4], ..4];
+    let mut d = box [0.0, ..16];
 
-    d[0][0] = a.x * a.x + (1.0 - a.x * a.x) * c;
-    d[0][1] = a.x * a.y + (1.0 - c) - a.z * s;
-    d[0][2] = a.x * a.z + (1.0 - c) + a.y * s;
-    d[0][3] = 0.0;
+    d[0 * 4 + 0] = a.x * a.x + (1.0 - a.x * a.x) * c;
+    d[0 * 4 + 1] = a.x * a.y + (1.0 - c) - a.z * s;
+    d[0 * 4 + 2] = a.x * a.z + (1.0 - c) + a.y * s;
+    d[0 * 4 + 3] = 0.0;
 
-    d[1][0] = a.x * a.y + (1.0 - c) + a.z * s;
-    d[1][1] = a.y * a.y + (1.0 - a.y * a.y) * c;
-    d[1][2] = a.y * a.z + (1.0 - c) - a.x * s;
-    d[1][3] = 0.0;
+    d[1 * 4 + 0] = a.x * a.y + (1.0 - c) + a.z * s;
+    d[1 * 4 + 1] = a.y * a.y + (1.0 - a.y * a.y) * c;
+    d[1 * 4 + 2] = a.y * a.z + (1.0 - c) - a.x * s;
+    d[1 * 4 + 3] = 0.0;
 
-    d[2][0] = a.x * a.z + (1.0 - c) - a.y * s;
-    d[2][1] = a.y * a.z + (1.0 - c) + a.x * s;
-    d[2][2] = a.z * a.z + (1.0 - a.z * a.z) * c;
-    d[2][3] = 0.0;
+    d[2 * 4 + 0] = a.x * a.z + (1.0 - c) - a.y * s;
+    d[2 * 4 + 1] = a.y * a.z + (1.0 - c) + a.x * s;
+    d[2 * 4 + 2] = a.z * a.z + (1.0 - a.z * a.z) * c;
+    d[2 * 4 + 3] = 0.0;
 
-    d[3][0] = 0.0; d[3][1] = 0.0; d[3][2] = 0.0; d[3][3] = 1.0;
+    d[3 * 4 + 0] = 0.0;
+    d[3 * 4 + 1] = 0.0;
+    d[3 * 4 + 2] = 0.0;
+    d[3 * 4 + 3] = 1.0;
 
     let m = Matrix::from_data(d);
 
-    Transform::new(m, Matrix::transpose(&m))
+    Transform::new(m.clone(), Matrix::transpose(&m.clone()))
   }
 
   pub fn look_at(pos: &Point, look: &Point, up: &Vector) -> Transform {
-    let mut m = [[0.0f32, ..4], ..4];
+    let mut m = box [0.0f32, ..16];
 
-    m[0][3] = pos.x;
-    m[1][3] = pos.y;
-    m[2][3] = pos.z;
-    m[3][3] =   1.0;
+    m[0 * 4 + 3] = pos.x;
+    m[1 * 4 + 3] = pos.y;
+    m[2 * 4 + 3] = pos.z;
+    m[3 * 4 + 3] =   1.0;
 
     let dir   = normalize(*look - *pos);
     let left  = normalize(cross(normalize(*up), dir));
     let newup = cross(dir, left);
 
-    m[0][0] = left.x;
-    m[1][0] = left.y;
-    m[2][0] = left.z;
-    m[3][0] =  0.0;
+    m[0 * 4 + 0] = left.x;
+    m[1 * 4 + 0] = left.y;
+    m[2 * 4 + 0] = left.z;
+    m[3 * 4 + 0] =  0.0;
 
-    m[0][1] = newup.x;
-    m[1][1] = newup.y;
-    m[2][1] = newup.z;
-    m[3][1] =   0.0;
+    m[0 * 4 + 1] = newup.x;
+    m[1 * 4 + 1] = newup.y;
+    m[2 * 4 + 1] = newup.z;
+    m[3 * 4 + 1] =   0.0;
 
-    m[0][2] = dir.x;
-    m[1][2] = dir.y;
-    m[2][2] = dir.z;
-    m[3][2] =   0.0;
+    m[0 * 4 + 2] = dir.x;
+    m[1 * 4 + 2] = dir.y;
+    m[2 * 4 + 2] = dir.z;
+    m[3 * 4 + 2] =   0.0;
 
     let cam_to_world = Matrix::from_data(m);
     Transform::new(Matrix::inverse(&cam_to_world), cam_to_world)
@@ -340,10 +343,10 @@ impl Transform {
 
   pub fn perspective(fov: f32, n: f32, f: f32) -> Transform {
     let persp = Matrix::new(
-      1.0, 0.0,     0.0,        0.0,
-      0.0, 1.0,     0.0,        0.0,
+      1.0, 0.0,         0.0,              0.0,
+      0.0, 1.0,         0.0,              0.0,
       0.0, 0.0, f / (f - n), -f * n / (f - n),
-      0.0, 0.0,     1.0,        0.0);
+      0.0, 0.0,         1.0,              0.0);
 
     let inv_tan_ang = 1.0 / radians(fov).tan() / 2.0;
     Transform::scale(inv_tan_ang, inv_tan_ang, 1.0) * Transform::from_matrix(persp)
@@ -352,7 +355,7 @@ impl Transform {
   pub fn is_identity(&self) -> bool {
     for i in range(0u, 4) {
       for j in range(0u, 4) {
-        if self.m.m[i][j] != if i == j { 1.0 } else { 0.0 } {
+        if self.m.m[i * 4 + j] != if i == j { 1.0 } else { 0.0 } {
           return false;
         }
       }
@@ -370,15 +373,15 @@ impl Transform {
   }
 
   pub fn swaps_handedness(&self) -> bool {
-    ((self.m.m[0][0]  *
-      (self.m.m[1][1] * self.m.m[2][2] -
-       self.m.m[1][2] * self.m.m[2][1])) -
-     (self.m.m[0][1]  *
-      (self.m.m[1][0] * self.m.m[2][2] -
-       self.m.m[1][2] * self.m.m[2][0])) -
-     (self.m.m[0][2]  *
-      (self.m.m[1][0] * self.m.m[2][1] -
-       self.m.m[1][1] * self.m.m[2][0]))) < 0.0
+    ((self.m.m[0 * 4 + 0]  *
+      (self.m.m[1 * 4 + 1] * self.m.m[2 * 4 + 2] -
+       self.m.m[1 * 4 + 2] * self.m.m[2 * 4 + 1])) -
+     (self.m.m[0 * 4 + 1]  *
+      (self.m.m[1 * 4 + 0] * self.m.m[2 * 4 + 2] -
+       self.m.m[1 * 4 + 2] * self.m.m[2 * 4 + 0])) -
+     (self.m.m[0 * 4 + 2]  *
+      (self.m.m[1 * 4 + 0] * self.m.m[2 * 4 + 1] -
+       self.m.m[1 * 4 + 1] * self.m.m[2 * 4 + 0]))) < 0.0
   }
 }
 
@@ -394,10 +397,10 @@ impl Mul<Transform, Transform> for Transform {
 impl TransformRhs<Point> for Point {
   fn apply_to_transform(&self, lhs: &Transform) -> Point {
     let (x, y, z) = (self.x, self.y, self.z);
-    let xp = lhs.m.m[0][0] * x + lhs.m.m[0][1] * y + lhs.m.m[0][2] * z + lhs.m.m[0][3];
-    let yp = lhs.m.m[1][0] * x + lhs.m.m[1][1] * y + lhs.m.m[1][2] * z + lhs.m.m[1][3];
-    let zp = lhs.m.m[2][0] * x + lhs.m.m[2][1] * y + lhs.m.m[2][2] * z + lhs.m.m[2][3];
-    let wp = lhs.m.m[3][0] * x + lhs.m.m[3][1] * y + lhs.m.m[3][2] * z + lhs.m.m[3][3];
+    let xp = lhs.m.m[0 * 4 + 0] * x + lhs.m.m[0 * 4 + 1] * y + lhs.m.m[0 * 4 + 2] * z + lhs.m.m[0 * 4 + 3];
+    let yp = lhs.m.m[1 * 4 + 0] * x + lhs.m.m[1 * 4 + 1] * y + lhs.m.m[1 * 4 + 2] * z + lhs.m.m[1 * 4 + 3];
+    let zp = lhs.m.m[2 * 4 + 0] * x + lhs.m.m[2 * 4 + 1] * y + lhs.m.m[2 * 4 + 2] * z + lhs.m.m[2 * 4 + 3];
+    let wp = lhs.m.m[3 * 4 + 0] * x + lhs.m.m[3 * 4 + 1] * y + lhs.m.m[3 * 4 + 2] * z + lhs.m.m[3 * 4 + 3];
 
     if wp == 1.0 {
       Point::new(xp, yp, zp)
@@ -408,10 +411,10 @@ impl TransformRhs<Point> for Point {
 
   fn apply_to_transform_directly(&self, lhs: &Transform, r: &mut Point) {
     let (x, y, z) = (self.x, self.y, self.z);
-    r.x   = lhs.m.m[0][0] * x + lhs.m.m[0][1] * y + lhs.m.m[0][2] * z + lhs.m.m[0][3];
-    r.y   = lhs.m.m[1][0] * x + lhs.m.m[1][1] * y + lhs.m.m[1][2] * z + lhs.m.m[1][3];
-    r.z   = lhs.m.m[2][0] * x + lhs.m.m[2][1] * y + lhs.m.m[2][2] * z + lhs.m.m[2][3];
-    let w = lhs.m.m[3][0] * x + lhs.m.m[3][1] * y + lhs.m.m[3][2] * z + lhs.m.m[3][3];
+    r.x   = lhs.m.m[0* 4 + 0] * x + lhs.m.m[0* 4 + 1] * y + lhs.m.m[0* 4 + 2] * z + lhs.m.m[0* 4 + 3];
+    r.y   = lhs.m.m[1* 4 + 0] * x + lhs.m.m[1* 4 + 1] * y + lhs.m.m[1* 4 + 2] * z + lhs.m.m[1* 4 + 3];
+    r.z   = lhs.m.m[2* 4 + 0] * x + lhs.m.m[2* 4 + 1] * y + lhs.m.m[2* 4 + 2] * z + lhs.m.m[2* 4 + 3];
+    let w = lhs.m.m[3* 4 + 0] * x + lhs.m.m[3* 4 + 1] * y + lhs.m.m[3* 4 + 2] * z + lhs.m.m[3* 4 + 3];
 
     if w != 1.0 {
       r.x /= w;
@@ -426,17 +429,17 @@ impl TransformRhs<Vector> for Vector {
     let (x, y, z) = (self.x, self.y, self.z);
 
     Vector::new(
-      lhs.m.m[0][0] * x + lhs.m.m[0][1] * y + lhs.m.m[0][2] * z,
-      lhs.m.m[1][0] * x + lhs.m.m[1][1] * y + lhs.m.m[1][2] * z,
-      lhs.m.m[2][0] * x + lhs.m.m[2][1] * y + lhs.m.m[2][2] * z)
+      lhs.m.m[0* 4 + 0] * x + lhs.m.m[0* 4 + 1] * y + lhs.m.m[0* 4 + 2] * z,
+      lhs.m.m[1* 4 + 0] * x + lhs.m.m[1* 4 + 1] * y + lhs.m.m[1* 4 + 2] * z,
+      lhs.m.m[2* 4 + 0] * x + lhs.m.m[2* 4 + 1] * y + lhs.m.m[2* 4 + 2] * z)
   }
 
   fn apply_to_transform_directly(&self, lhs: &Transform, r: &mut Vector) {
     let (x, y, z) = (self.x, self.y, self.z);
 
-    r.x = lhs.m.m[0][0] * x + lhs.m.m[0][1] * y + lhs.m.m[0][2] * z;
-    r.y = lhs.m.m[1][0] * x + lhs.m.m[1][1] * y + lhs.m.m[1][2] * z;
-    r.z = lhs.m.m[2][0] * x + lhs.m.m[2][1] * y + lhs.m.m[2][2] * z;
+    r.x = lhs.m.m[0* 4 + 0] * x + lhs.m.m[0* 4 + 1] * y + lhs.m.m[0* 4 + 2] * z;
+    r.y = lhs.m.m[1* 4 + 0] * x + lhs.m.m[1* 4 + 1] * y + lhs.m.m[1* 4 + 2] * z;
+    r.z = lhs.m.m[2* 4 + 0] * x + lhs.m.m[2* 4 + 1] * y + lhs.m.m[2* 4 + 2] * z;
   }
 }
 
@@ -445,17 +448,17 @@ impl TransformRhs<Normal> for Normal {
     let (x, y, z) = (self.x, self.y, self.z);
 
     Normal::new(
-      lhs.m_inv.m[0][0] * x + lhs.m_inv.m[1][0] * y + lhs.m_inv.m[2][0] * z,
-      lhs.m_inv.m[0][1] * x + lhs.m_inv.m[1][1] * y + lhs.m_inv.m[2][1] * z,
-      lhs.m_inv.m[0][2] * x + lhs.m_inv.m[1][2] * y + lhs.m_inv.m[2][2] * z)
+      lhs.m_inv.m[0* 4 + 0] * x + lhs.m_inv.m[1* 4 + 0] * y + lhs.m_inv.m[2* 4 + 0] * z,
+      lhs.m_inv.m[0* 4 + 1] * x + lhs.m_inv.m[1* 4 + 1] * y + lhs.m_inv.m[2* 4 + 1] * z,
+      lhs.m_inv.m[0* 4 + 2] * x + lhs.m_inv.m[1* 4 + 2] * y + lhs.m_inv.m[2* 4 + 2] * z)
   }
 
   fn apply_to_transform_directly(&self, lhs: &Transform, r: &mut Normal) {
     let (x, y, z) = (self.x, self.y, self.z);
 
-    r.x = lhs.m_inv.m[0][0] * x + lhs.m_inv.m[1][0] * y + lhs.m_inv.m[2][0] * z;
-    r.y = lhs.m_inv.m[0][1] * x + lhs.m_inv.m[1][1] * y + lhs.m_inv.m[2][1] * z;
-    r.z = lhs.m_inv.m[0][2] * x + lhs.m_inv.m[1][2] * y + lhs.m_inv.m[2][2] * z;
+    r.x = lhs.m_inv.m[0* 4 + 0] * x + lhs.m_inv.m[1* 4 + 0] * y + lhs.m_inv.m[2* 4 + 0] * z;
+    r.y = lhs.m_inv.m[0* 4 + 1] * x + lhs.m_inv.m[1* 4 + 1] * y + lhs.m_inv.m[2* 4 + 1] * z;
+    r.z = lhs.m_inv.m[0* 4 + 2] * x + lhs.m_inv.m[1* 4 + 2] * y + lhs.m_inv.m[2* 4 + 2] * z;
   }
 }
 
@@ -508,11 +511,11 @@ impl Ord for Transform {
   fn lt(&self, t: &Transform) -> bool {
     for i in range(0u, 4) {
       for j in range(0u, 4) {
-        if self.m.m[i][j] == t.m.m[i][j] {
+        if self.m.m[i * 4 + j] == t.m.m[i * 4 + j] {
           continue;
         }
 
-        return self.m.m[i][j] < t.m.m[i][j];
+        return self.m.m[i * 4 + j] < t.m.m[i * 4 + j];
       }
     }
 

@@ -68,7 +68,7 @@ pub trait BxDF<'a> {
 }
 
 pub struct Bsdf<'a> {
-  pub dg_shading: DifferentialGeometry<'a>,
+  pub dg_shading: DifferentialGeometry,
   pub eta: f32,
   pub nn: Normal,
   pub ng: Normal,

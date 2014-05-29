@@ -6,11 +6,11 @@ pub struct ProgressReporter {
   work_done: uint,
   plusses_printed: uint,
   total_plusses: uint,
-  title: StrBuf
+  title: String
 }
 
 impl ProgressReporter {
-  pub fn new(tw: uint, bar_length: uint, title: StrBuf) -> ProgressReporter {
+  pub fn new(tw: uint, bar_length: uint, title: String) -> ProgressReporter {
     let total_plusses = max(2, bar_length - title.len());
     let plusses_printed = 0;
     let work_done = 0;

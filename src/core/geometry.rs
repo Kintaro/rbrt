@@ -23,6 +23,10 @@ impl Vector {
   pub fn new(x: f32, y: f32, z: f32) -> Vector {
     Vector { x: x, y: y, z: z }
   }
+
+  pub fn from_normal(n: &Normal) -> Vector {
+    Vector { x: n.x, y: n.y, z: n.z }
+  }
 }
 
 impl Length for Vector {
@@ -168,6 +172,10 @@ impl Normal {
   pub fn new(x: f32, y: f32, z: f32) -> Normal {
     Normal { x: x, y: y, z: z }
   }
+
+  pub fn from_vector(v: &Vector) -> Normal {
+    Normal { x: v.x, y: v.y, z: v.z }
+  }
 }
 
 impl Length for Normal {
@@ -197,6 +205,12 @@ impl Mul<f32, Normal> for Normal {
 impl Div<f32, Normal> for Normal {
   fn div(&self, rhs: &f32) -> Normal {
     Normal::new(self.x / *rhs, self.y / *rhs, self.z / *rhs)
+  }
+}
+
+impl Neg<Normal> for Normal {
+  fn neg(&self) -> Normal {
+    Normal::new(-self.x, -self.y, -self.z)
   }
 }
 
@@ -480,6 +494,15 @@ pub fn cross<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T, b
     (v1x * v2y) - (v1y * v2x))
 }
 
+/// Compute the cross product between two vector or normals
+pub fn cross_n<T: Index<uint, f32> + Length, S: Index<uint, f32> + Length>(a: T, b: S) -> Normal {
+  let (v1x, v1y, v1z) = (a[0], a[1], a[2]);
+  let (v2x, v2y, v2z) = (b[0], b[1], b[2]);
+  Normal::new((v1y * v2z) - (v1z * v2y),
+    (v1z * v2x) - (v1x * v2z),
+    (v1x * v2y) - (v1y * v2x))
+}
+
 pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vector {
   Vector::new(sin_theta * phi.cos(),
     sin_theta * phi.sin(),
@@ -509,4 +532,15 @@ pub fn solve_linear_system(a: [[f32, ..2], ..2], b: [f32, ..2], x0: &mut f32, x1
   *x1 = (a[0][0] * b[1] - a[1][0] * b[0]) / det;
 
   !x0.is_nan() && !x1.is_nan()
+}
+
+pub fn face_forward
+    <T: Index<uint, f32> + Length + Neg<T> + Clone,
+     S: Index<uint, f32> + Length>(n: T, v: S) -> T {
+  let r = n.clone();
+  if dot(n, v) < 0.0 {
+    -r
+  } else {
+    r
+  }
 }

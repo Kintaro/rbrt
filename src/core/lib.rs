@@ -28,4 +28,5 @@ pub mod shape;
 pub mod spectrum;
 pub mod spectrum_consts;
 pub mod spherical;
+pub mod texture;
 pub mod transform;

@@ -104,6 +104,8 @@ static primes : [uint, ..1000] = [
   7727, 7741, 7753, 7757, 7759, 7789, 7793, 7817, 7823, 7829,
   7841, 7853, 7867, 7873, 7877, 7879, 7883, 7901, 7907, 7919 ];
 
+pub static one_minus_epsilon : f32 = 0.9999999403953552;
+
 pub struct Distribution1D {
   func:     ~[f32],
   cdf:      ~[f32],
@@ -253,4 +255,24 @@ pub fn van_der_corput(n: uint, scramble: uint) -> f32 {
   x ^= scramble;
 
   (((x >> 8) & 0xffffff) as f32 / (1 << 24) as f32).min(0.9)
+}
+
+pub fn sobol2(n: uint, scramble: uint) -> f32 {
+  let mut v = 1 << 31;
+  let mut m = n;
+  let mut s = scramble;
+
+  while m != 0 {
+    if m & 0x1 != 0x1 {
+      s ^= v;
+    }
+    m >>= 1;
+    v ^= v >> 1;
+  }
+
+  one_minus_epsilon.min(((s >> 8) & 0xffffff) as f32 / (1 << 24) as f32)
+}
+
+pub fn sample02(n: uint, scramble: (uint, uint), sample: &mut (f32, f32)) {
+  *sample = (van_der_corput(n, scramble.val0()), sobol2(n, scramble.val1()));
 }
