@@ -401,6 +401,17 @@ impl BBox {
 
 /// Utility methods
 
+pub fn mod_t(a: uint, b: uint) -> uint {
+  let n = a / b;
+  let x = a - n * b;
+
+  if x < 0 {
+    x + b
+  } else {
+    x
+  }
+}
+
 pub fn clamp<T: Ord>(val: T, low: T, high: T) -> T {
   if val < low {
     low

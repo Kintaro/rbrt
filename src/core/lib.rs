@@ -15,6 +15,7 @@ pub mod intersection;
 pub mod kdtree;
 pub mod light;
 pub mod material;
+pub mod mipmap;
 pub mod montecarlo;
 pub mod octree;
 pub mod paramset;
